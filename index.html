@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Enhanced QR Code Generator</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 1rem;
+      max-width: 600px;
+      margin: auto;
+    }
+    label, input, button, select {
+      display: block;
+      margin-bottom: 1rem;
+      width: 100%;
+    }
+    canvas {
+      display: block;
+      margin: 1rem auto;
+      border: 1px solid #ccc;
+    }
+    #qr-preview {
+      margin-top: 1rem;
+      text-align: center;
+    }
+    #qr-options {
+      display: grid;
+      gap: 0.5rem;
+    }
+    .download-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+    }
+    @media (hover: none) {
+      input, button, canvas, select {
+        font-size: 1.2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h2>Enhanced QR Code Generator</h2>
+  <input type="text" id="qr-text" placeholder="Enter URL or Text" />
+
+  <div id="qr-options">
+    <label>Foreground Color: <input type="color" id="fg-color" value="#000000" /></label>
+    <label>Background Color: <input type="color" id="bg-color" value="#ffffff" /></label>
+    <label>Size (px): <input type="number" id="qr-size" min="128" max="1024" value="256" /></label>
+    <label>Upload Logo: <input type="file" id="logo-upload" accept="image/*" /></label>
+    <label>Dots Style:
+      <select id="dots-style">
+        <option value="square">Square</option>
+        <option value="dots">Dots</option>
+        <option value="rounded">Rounded</option>
+        <option value="classy">Classy</option>
+        <option value="classy-rounded">Classy Rounded</option>
+      </select>
+    </label>
+    <label>Corner Style:
+      <select id="corner-style">
+        <option value="square">Square</option>
+        <option value="dot">Dot</option>
+        <option value="extra-rounded">Extra Rounded</option>
+      </select>
+    </label>
+  </div>
+
+  <button onclick="generateQRCode()">Generate QR Code</button>
+
+  <div id="qr-preview"></div>
+
+  <div class="download-buttons">
+    <button onclick="downloadQR('png')">Download PNG</button>
+    <button onclick="downloadQR('svg')">Download SVG</button>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
+  <script>
+    let qr;
+    let logoImage = null;
+
+    document.getElementById("logo-upload").addEventListener("change", function (e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          logoImage = reader.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    function generateQRCode() {
+      const text = document.getElementById("qr-text").value;
+      const fgColor = document.getElementById("fg-color").value;
+      const bgColor = document.getElementById("bg-color").value;
+      const size = parseInt(document.getElementById("qr-size").value);
+      const dotsStyle = document.getElementById("dots-style").value;
+      const cornerStyle = document.getElementById("corner-style").value;
+
+      if (!text.trim()) {
+        alert("Please enter text or a URL.");
+        return;
+      }
+
+      qr = new QRCodeStyling({
+        width: size,
+        height: size,
+        data: text,
+        image: logoImage || "",
+        dotsOptions: {
+          color: fgColor,
+          type: dotsStyle,
+        },
+        cornersSquareOptions: {
+          type: cornerStyle
+        },
+        cornersDotOptions: {
+          type: "dot"
+        },
+        backgroundOptions: {
+          color: bgColor,
+        },
+        imageOptions: {
+          crossOrigin: "anonymous",
+          margin: 4,
+          imageSize: 0.2,
+        },
+      });
+
+      const preview = document.getElementById("qr-preview");
+      preview.innerHTML = "";
+      qr.append(preview);
+    }
+
+    function downloadQR(format) {
+      if (qr) qr.download({ name: "qr-code", extension: format });
+    }
+  </script>
+</body>
+</html>
